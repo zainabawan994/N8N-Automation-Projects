@@ -1,0 +1,192 @@
+{
+  "name": "Chat Bot With Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": false,
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "415a1c2e-dba4-427b-b8a7-1fcb2275e4d9",
+      "name": "When chat message received",
+      "webhookId": "1e1b656f-001c-491f-9ada-0302e6dc35cd"
+    },
+    {
+      "parameters": {
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        96,
+        -16
+      ],
+      "id": "486b6c4d-7d48-4dbb-a47e-acedf2a6c2f7",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        112,
+        176
+      ],
+      "id": "38104ce3-a501-4082-befa-0e6e600286e8",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "1uNGtsHCzmTaObaV",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1AW9RCj8Qgs66D6twqq4DTOREz-uCMEN-mxXe-3HPcUQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1AW9RCj8Qgs66D6twqq4DTOREz-uCMEN-mxXe-3HPcUQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Text"
+          ],
+          "schema": [
+            {
+              "id": "Text",
+              "displayName": "Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        -16
+      ],
+      "id": "cfe22d88-95fc-44ec-8586-42d8bbab097e",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EJkxwMBEEmThR4kV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "62d84c6c-4a46-4676-86d6-cd8d8c352302",
+      "name": "Chat",
+      "webhookId": "1c690de1-ece5-4c75-865e-8d42a568496a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "28ce233f-869d-42f9-a808-159a78ec8003",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a4c174233c96b8ec2f5886062dacf0d087a2fffddb117bdd7dabafb4bd56d6ba"
+  },
+  "nodeGroups": [],
+  "id": "MwYFkHHZ0XNRuszy",
+  "tags": []
+}

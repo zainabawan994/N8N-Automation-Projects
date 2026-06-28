@@ -1,0 +1,277 @@
+{
+  "name": "Mail Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -448,
+        -320
+      ],
+      "id": "19d5ec52-969b-4c3d-b399-9fa3740818b4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AizKrY1lwrcU9suX",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Order Management Agent",
+              "description": "Analyzes incoming emails to identify order-related requests such as order status, order updates, cancellations, returns, or delivery inquiries and routes them to the appropriate workflow."
+            },
+            {
+              "category": "Customer Query Agent",
+              "description": "Detects and processes general customer inquiries, support requests, product information questions, and other non-order-related emails, then generates or forwards appropriate responses."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        -288
+      ],
+      "id": "aeec9a94-672c-45c7-83ac-de9be22e2c15",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "e1668f2a-80fb-4f2a-b0ff-b238cd3c614f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "1uNGtsHCzmTaObaV",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a professional Customer Support Email Assistant.\n\nYour task is to read the customer's order-related email and generate a polite, professional, and helpful response.\n\nAnalyze the customer's message carefully and identify the purpose of the email, such as:\n\n* Order status inquiry\n* Shipping or delivery issue\n* Return request\n* Refund request\n* Order cancellation\n* Order modification\n* Missing item complaint\n* Damaged product complaint\n* General order support\n\nCustomer Email Subject:\n{{ $json.Subject }}\n\nCustomer Email Content:\n{{ $json.snippet }}\n\nInstructions:\n\n1. Understand the customer's issue.\n2. Write a friendly and professional reply.\n3. Thank the customer for contacting support.\n4. Address their specific concern.\n5. If exact order details are unavailable, politely state that the support team will review the request and respond shortly.\n6. Keep the response concise and human-like.\n7. Do not invent tracking numbers, refund amounts, delivery dates, or order details.\n8. Output only the email body without any explanations.\n\nGenerate the email reply now.\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -480
+      ],
+      "id": "03071cd1-e20e-452a-a7cc-d2dc6fa3b53e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "R3nVkr4foA29KiEc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=",
+        "message": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -496
+      ],
+      "id": "096db9e6-8fa5-430b-8fb0-935f4b47779c",
+      "name": "Create a draft",
+      "webhookId": "3ea76f22-4160-460f-bae3-6c46f7260604",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AizKrY1lwrcU9suX",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a Senior Customer Support Copywriter.\n\nYour task is to read the incoming customer email and write a complete, professional, and polite email response.\n\nYou must extract and use the following details from the email:\n\n* Customer name (if available)\n* Customer email address\n* Customer query or issue\n\nInput Email:\nSubject: {{ $('Gmail Trigger').item.json.subject }}\nFrom Email: {{ $('Gmail Trigger').item.json.from }}\nCustomer Name: {{ $('Gmail Trigger').item.json.from_name || $('Gmail Trigger').item.json.from }}\nEmail Content: {{ $('Gmail Trigger').item.json.snippet }}\n\nYour Task:\n\n1. Understand the customer's issue clearly.\n2. Write a professional email reply as a senior support agent.\n3. Always include:\n\n   * A proper subject line relevant to the issue\n   * A polite greeting using the customer's name (if available, otherwise use \"Dear Customer\")\n   * A clear, helpful, and human-like email body\n   * A professional closing line\n\nRules:\n\n* Be natural, polite, and professional.\n* Do not sound robotic.\n* Do not invent order details, tracking numbers, refunds, or missing information.\n* If information is missing, politely say that the support team will review and respond shortly.\n* Keep the response concise and easy to understand.\n\nOutput Format (STRICT - follow exactly):\n\nSubject: <generated subject>\n\nEmail Body: <complete email reply>\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        -160
+      ],
+      "id": "2149a8b5-164b-424f-9a87-0bafeb73d60f",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "R3nVkr4foA29KiEc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $('Gmail Trigger').item.json.snippet }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        -160
+      ],
+      "id": "b1c579b5-af0f-4178-867f-fceaf0a0371e",
+      "name": "Create a draft1",
+      "webhookId": "30f684af-274c-41c7-945c-b681362107b7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AizKrY1lwrcU9suX",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8129d463-fb32-423c-8560-08abd40d52bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a4c174233c96b8ec2f5886062dacf0d087a2fffddb117bdd7dabafb4bd56d6ba"
+  },
+  "nodeGroups": [],
+  "id": "Df9OjYN7CZPciUfz",
+  "tags": []
+}

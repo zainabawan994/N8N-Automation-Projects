@@ -1,0 +1,144 @@
+{
+  "name": "Child",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        -16
+      ],
+      "id": "efe706e8-bed3-4aaa-a621-8977c7e6bb04",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ $json.query }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "901af147-2b9a-43d5-9bf0-af2456c8ac81",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "IjFDKVildRZ8oB3v",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a professional weather assistant.\n\nYour task is to convert the weather API response into a clear, friendly, and well-formatted weather report.\n\nRules:\n- Do not mention JSON or API data.\n- Use simple and natural English.\n- Use headings and bullet points.\n- Add suitable weather emojis.\n- If any field is missing, simply skip it.\n- Round temperature values to one decimal place.\n- Mention the city name at the top.\n- End the response with a short weather suggestion based on the conditions.\n\nUse the following weather variables whenever they are available:\n\n📍 Location\n- City : {{ $json.name }}\n\n🌡 Temperature\n- Current Temperature:{{ $json.main.temp }} °C\n☁ Weather\n- Condition:{{ $json.weather[0].main }}\n- Description: {{ $json.weather[0].description }}\n\n💧 Atmosphere\n- Humidity:{{ $json.main.humidity }}  %\n- Pressure:{{ $json.main.pressure }} hPa\n- Visibility:{{ $json.visibility }} meters\n\n\n☀ Sun\n- Sunrise: {{ $json.sys.sunrise }}\n- Sunset: {{ $json.sys.sunset }}\n\nReturn the response in this format:\n\n🌤 Weather Report for <City>, <Country>\n\n🌡 Temperature\n• Current:\n• Feels Like:\n• Min:\n• Max:\n\n☁ Conditions\n• Weather:\n• Description:\n\n💨 Wind\n• Speed:\n• Direction:\n\n💧 Atmosphere\n• Humidity:\n• Pressure:\n• Visibility:\n\n☀ Sun\n• Sunrise:\n• Sunset:\n Recommendation\nWrite one or two sentences of practical advice based on the weather."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        -16
+      ],
+      "id": "def16d22-e413-49e2-a812-804e8ac9599e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "R3nVkr4foA29KiEc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d929865-930b-4e68-a7aa-59802ae975d4",
+              "name": "output[0].content[0].text",
+              "value": "={{ $json.output[0].content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "388b2b90-eece-485e-99bc-c6f4bb273306",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b08875a7-6d92-4b9c-a88c-fbf2af1318a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a4c174233c96b8ec2f5886062dacf0d087a2fffddb117bdd7dabafb4bd56d6ba"
+  },
+  "nodeGroups": [],
+  "id": "A37EMSRseh7FTP7V",
+  "tags": []
+}

@@ -1,0 +1,188 @@
+{
+  "name": "Weather",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "f1bc26ad-6a91-4240-aaca-4a67bd9ef834",
+      "name": "When chat message received",
+      "webhookId": "91d2362f-e209-4070-9edd-6f562304bfdb"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant\n#Tool\n-) Use \"Weather\" tool to find the weather of any city"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -80
+      ],
+      "id": "28882ab9-f8e5-4c0e-8c90-a6086382eccd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        112
+      ],
+      "id": "6c466b7a-a505-4d0f-8fc5-cebf8302468e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "R3nVkr4foA29KiEc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        128,
+        144
+      ],
+      "id": "e184c53f-c896-4059-8275-aafe9b091957",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool find weather of any city ",
+        "workflowId": {
+          "__rl": true,
+          "value": "A37EMSRseh7FTP7V",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/A37EMSRseh7FTP7V",
+          "cachedResultName": "Child"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        112
+      ],
+      "id": "b9237e44-e1c2-4812-ad70-cab6fe693b29",
+      "name": "Weather"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        -80
+      ],
+      "id": "72d8ed02-b3da-49b5-80c3-b6b6b8501aeb",
+      "name": "Chat",
+      "webhookId": "25542aac-8c8c-44b2-90fe-1cf7fc62d9db"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7cb380e9-8578-442f-8f15-ee81c09cacc2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a4c174233c96b8ec2f5886062dacf0d087a2fffddb117bdd7dabafb4bd56d6ba"
+  },
+  "nodeGroups": [],
+  "id": "0mu3xPCqMsl28i2x",
+  "tags": []
+}
